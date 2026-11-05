@@ -29,8 +29,25 @@
         <main>
             <!-- Lessons Page: displayed when displayCart is false -->
             <div v-if="!displayCart">
-                <!-- Use v-for to display all lessons from the lessons array -->
-                <div v-for="lesson in lessons" style="border: 1px solid #ccc; padding: 10px; margin: 10px 0;">
+
+                <!-- Sort Controls: Sort by attribute and Ascending/Descending order -->
+                <div style="border: 1px solid #aaa; padding: 10px; margin: 10px 0;">
+                    <p>
+                        <strong>Sort by:</strong>
+                        <label><input type="radio" v-model="sortBy" value="subject"> Subject</label>
+                        <label><input type="radio" v-model="sortBy" value="location"> Location</label>
+                        <label><input type="radio" v-model="sortBy" value="price"> Price</label>
+                        <label><input type="radio" v-model="sortBy" value="availability"> Spaces</label>
+                    </p>
+                    <p>
+                        <strong>Order:</strong>
+                        <label><input type="radio" v-model="sortOrder" value="ascending"> Ascending</label>
+                        <label><input type="radio" v-model="sortOrder" value="descending"> Descending</label>
+                    </p>
+                </div>
+
+                <!-- Use v-for to display all lessons from the sortedLessons computed property -->
+                <div v-for="lesson in sortedLessons" style="border: 1px solid #ccc; padding: 10px; margin: 10px 0;">
                     <figure>
                         <img v-bind:src="lesson.image" v-bind:alt="lesson.alt" width="100">
                     </figure>
@@ -102,6 +119,8 @@
                     displayCart: false,
                     lessons: lessonsArray,
                     cart: [],
+                    sortBy: "subject",
+                    sortOrder: "ascending",
                     order: {
                         name: "",
                         phone: ""
@@ -150,6 +169,16 @@
             computed: {
                 numberOfItems() {
                     return this.cart.length;
+                },
+                sortedLessons() {
+                    const attr = this.sortBy;
+                    const direction = this.sortOrder === "ascending" ? 1 : -1;
+                    function compare(a, b) {
+                        if (a[attr] > b[attr]) return 1 * direction;
+                        if (a[attr] < b[attr]) return -1 * direction;
+                        return 0;
+                    }
+                    return this.lessons.slice().sort(compare);
                 },
                 validOrder() {
                     const nameRegex = /^[A-Za-z\s]+$/;
