@@ -22,6 +22,10 @@
         <h2 v-text="lesson.subject"></h2>
         <p v-text="lesson.location"></p>
         <p>Price: £{{ lesson.price }}</p>
+        <p>Spaces: {{ lesson.availability }}</p>
+
+        <!-- Add to cart button: calls addToCart() when clicked, disabled when canAddToCart is false -->
+        <button v-on:click="addToCart" v-bind:disabled="!canAddToCart">Add to cart</button>
     </div>
 
     <script type="module">
@@ -36,9 +40,22 @@
                         subject: "Math",
                         location: "London",
                         price: 100,
+                        availability: 5,
                         image: "images/math.png",
                         alt: "Math lesson icon"
-                    }
+                    },
+                    cart: []
+                }
+            },
+            methods: {
+                addToCart() {
+                    this.cart.push(this.lesson.id);
+                    this.lesson.availability -= 1;
+                }
+            },
+            computed: {
+                canAddToCart() {
+                    return this.lesson.availability > 0;
                 }
             }
         })
