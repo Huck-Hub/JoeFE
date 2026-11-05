@@ -20,9 +20,9 @@
         <header>
             <h1 v-text="sitename"></h1>
 
-            <button v-on:click="showCheckout" v-bind:disabled="numberOfItems === 0">
+            <button v-on:click="showCheckout" v-bind:disabled="numberOfItems === 0 && !displayCart">
                 <i class="fa fa-shopping-cart" aria-hidden="true"></i>
-                Checkout ({{ numberOfItems }})
+                Shopping Cart ({{ numberOfItems }})
             </button>
         </header>
 
@@ -49,9 +49,25 @@
                 </div>
             </div>
 
-            <!-- Checkout / Cart Page: displayed when displayCart is true -->
+            <!-- Shopping Cart & Checkout Page: displayed when displayCart is true -->
             <div v-else>
                 <h2>Checkout</h2>
+                <p>
+                    <strong>Name (letters only):</strong>
+                    <input v-model="order.name" placeholder="Enter your name">
+                </p>
+                <p>
+                    <strong>Phone (numbers only):</strong>
+                    <input v-model="order.phone" placeholder="Enter your phone number">
+                </p>
+
+                <button v-on:click="submitOrder" v-bind:disabled="!validOrder">
+                    Checkout
+                </button>
+
+                <p v-if="orderSubmitted" style="color: green; font-weight: bold;">
+                    Order has been submitted! Thank you, {{ submittedName }}.
+                </p>
             </div>
         </main>
     </div>
@@ -65,24 +81,44 @@
                     sitename: "After School Club",
                     displayCart: false,
                     lessons: lessonsArray,
-                    cart: []
+                    cart: [],
+                    order: {
+                        name: "",
+                        phone: ""
+                    },
+                    orderSubmitted: false,
+                    submittedName: ""
                 }
             },
             methods: {
                 addToCart(lesson) {
                     this.cart.push(lesson.id);
                     lesson.availability -= 1;
+                    this.orderSubmitted = false;
                 },
                 canAddToCart(lesson) {
                     return lesson.availability > 0;
                 },
                 showCheckout() {
                     this.displayCart = this.displayCart ? false : true;
+                },
+                submitOrder() {
+                    this.submittedName = this.order.name;
+                    this.orderSubmitted = true;
+                    alert("Order submitted!");
+                    this.cart = [];
+                    this.order.name = "";
+                    this.order.phone = "";
                 }
             },
             computed: {
                 numberOfItems() {
                     return this.cart.length;
+                },
+                validOrder() {
+                    const nameRegex = /^[A-Za-z\s]+$/;
+                    const phoneRegex = /^[0-9]+$/;
+                    return nameRegex.test(this.order.name.trim()) && phoneRegex.test(this.order.phone.trim());
                 }
             }
         })
