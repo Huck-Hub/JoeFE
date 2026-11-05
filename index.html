@@ -7,25 +7,48 @@
 
     <!-- Load Vue 3 from the unpkg CDN -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <!-- Load Font Awesome 4.7 for icons (as taught in Workshop 2) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
 <body>
 
     <!-- The HTML element where our Vue app will be mounted -->
     <div id="app">
-        <h1 v-text="sitename"></h1>
+        <header>
+            <h1 v-text="sitename"></h1>
 
-        <figure>
-            <!-- Bind 'src' and 'alt' attributes to properties inside 'lesson' in data -->
-            <img v-bind:src="lesson.image" v-bind:alt="lesson.alt" width="100">
-        </figure>
+            <!-- Checkout / Shopping Cart button:
+                 - Only enabled when there is at least 1 item in the cart
+                 - Clicking toggles between the lesson page and the checkout page -->
+            <button v-on:click="showCheckout" v-bind:disabled="numberOfItems === 0">
+                <i class="fa fa-shopping-cart" aria-hidden="true"></i>
+                Checkout ({{ numberOfItems }})
+            </button>
+        </header>
 
-        <h2 v-text="lesson.subject"></h2>
-        <p v-text="lesson.location"></p>
-        <p>Price: £{{ lesson.price }}</p>
-        <p>Spaces: {{ lesson.availability }}</p>
+        <main>
+            <!-- Lesson Page: only displayed when displayCart is false -->
+            <div v-if="!displayCart">
+                <figure>
+                    <!-- Bind 'src' and 'alt' attributes to properties inside 'lesson' in data -->
+                    <img v-bind:src="lesson.image" v-bind:alt="lesson.alt" width="100">
+                </figure>
 
-        <!-- Add to cart button: calls addToCart() when clicked, disabled when canAddToCart is false -->
-        <button v-on:click="addToCart" v-bind:disabled="!canAddToCart">Add to cart</button>
+                <h2 v-text="lesson.subject"></h2>
+                <p v-text="lesson.location"></p>
+                <p>Price: £{{ lesson.price }}</p>
+                <p>Spaces: {{ lesson.availability }}</p>
+
+                <!-- Add to cart button: calls addToCart() when clicked, disabled when canAddToCart is false -->
+                <button v-on:click="addToCart" v-bind:disabled="!canAddToCart">Add to cart</button>
+            </div>
+
+            <!-- Checkout / Cart Page placeholder: displayed when displayCart is true -->
+            <div v-else>
+                <h2>Checkout</h2>
+            </div>
+        </main>
     </div>
 
     <script type="module">
@@ -35,6 +58,7 @@
             data() {
                 return {
                     sitename: "After School Club",
+                    displayCart: false,
                     lesson: {
                         id: 1001,
                         subject: "Math",
@@ -51,9 +75,15 @@
                 addToCart() {
                     this.cart.push(this.lesson.id);
                     this.lesson.availability -= 1;
+                },
+                showCheckout() {
+                    this.displayCart = this.displayCart ? false : true;
                 }
             },
             computed: {
+                numberOfItems() {
+                    return this.cart.length;
+                },
                 canAddToCart() {
                     return this.lesson.availability > 0;
                 }
