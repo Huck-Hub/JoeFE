@@ -51,6 +51,26 @@
 
             <!-- Shopping Cart & Checkout Page: displayed when displayCart is true -->
             <div v-else>
+                <h2>Shopping Cart</h2>
+
+                <!-- Display each lesson that has at least 1 copy in the cart -->
+                <div v-for="lesson in lessons">
+                    <div v-if="cartCount(lesson.id) > 0" style="border: 1px solid #ccc; padding: 10px; margin: 10px 0;">
+                        <figure>
+                            <img v-bind:src="lesson.image" v-bind:alt="lesson.alt" width="80">
+                        </figure>
+                        <h3>
+                            <i v-bind:class="'fa ' + lesson.icon" aria-hidden="true"></i>
+                            <span v-text="lesson.subject"></span>
+                        </h3>
+                        <p>Location: <span v-text="lesson.location"></span></p>
+                        <p>Price: £{{ lesson.price }}</p>
+                        <p>Spaces in Cart: {{ cartCount(lesson.id) }}</p>
+
+                        <button v-on:click="removeFromCart(lesson)">Remove</button>
+                    </div>
+                </div>
+
                 <h2>Checkout</h2>
                 <p>
                     <strong>Name (letters only):</strong>
@@ -99,6 +119,22 @@
                 canAddToCart(lesson) {
                     return lesson.availability > 0;
                 },
+                cartCount(id) {
+                    let count = 0;
+                    for (let i = 0; i < this.cart.length; i++) {
+                        if (this.cart[i] === id) {
+                            count++;
+                        }
+                    }
+                    return count;
+                },
+                removeFromCart(lesson) {
+                    const index = this.cart.indexOf(lesson.id);
+                    if (index > -1) {
+                        this.cart.splice(index, 1);
+                        lesson.availability += 1;
+                    }
+                },
                 showCheckout() {
                     this.displayCart = this.displayCart ? false : true;
                 },
@@ -118,7 +154,7 @@
                 validOrder() {
                     const nameRegex = /^[A-Za-z\s]+$/;
                     const phoneRegex = /^[0-9]+$/;
-                    return nameRegex.test(this.order.name.trim()) && phoneRegex.test(this.order.phone.trim());
+                    return this.cart.length > 0 && nameRegex.test(this.order.name.trim()) && phoneRegex.test(this.order.phone.trim());
                 }
             }
         })
