@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>After School Club</title>
 
-    <!-- Load our lessons array -->
-    <script src="lessons.js"></script>
+    <!-- Lessons are now fetched from the Back-End server instead of lessons.js -->
+    <!-- <script src="lessons.js"></script> -->
 
     <!-- Load Font Awesome 4.7 for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -117,7 +117,7 @@
                 return {
                     sitename: "After School Club",
                     displayCart: false,
-                    lessons: lessonsArray,
+                    lessons: [],
                     cart: [],
                     sortBy: "subject",
                     sortOrder: "ascending",
@@ -129,7 +129,15 @@
                     submittedName: ""
                 }
             },
+            created() {
+                this.fetchData();
+            },
             methods: {
+                async fetchData() {
+                    const url = "http://localhost:3000/";
+                    let response = await fetch(url);
+                    this.lessons = await response.json();
+                },
                 addToCart(lesson) {
                     this.cart.push(lesson.id);
                     lesson.availability -= 1;
