@@ -30,6 +30,14 @@
             <!-- Lessons Page: displayed when displayCart is false -->
             <div v-if="!displayCart">
 
+                <!-- [Challenge 1] Search Bar: searches across subject, location, price, and availability via Back-End REST API -->
+                <div style="border: 1px solid #aaa; padding: 10px; margin: 10px 0;">
+                    <p>
+                        <strong>Search Lessons:</strong>
+                        <input v-model="searchQuery" placeholder="Search by subject, location, price, or spaces...">
+                    </p>
+                </div>
+
                 <!-- Sort Controls: Sort by attribute and Ascending/Descending order -->
                 <div style="border: 1px solid #aaa; padding: 10px; margin: 10px 0;">
                     <p>
@@ -120,6 +128,7 @@
                     displayCart: false,
                     lessons: [],
                     cart: [],
+                    searchQuery: "",
                     sortBy: "subject",
                     sortOrder: "ascending",
                     order: {
@@ -133,9 +142,17 @@
             created() {
                 this.fetchData();
             },
+            watch: {
+                searchQuery: "searchLessons"
+            },
             methods: {
                 async fetchData() {
                     const url = BACKEND_URL + "/lessons";
+                    let response = await fetch(url);
+                    this.lessons = await response.json();
+                },
+                async searchLessons() {
+                    const url = BACKEND_URL + "/search?q=" + encodeURIComponent(this.searchQuery);
                     let response = await fetch(url);
                     this.lessons = await response.json();
                 },
