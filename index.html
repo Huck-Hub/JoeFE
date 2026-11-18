@@ -110,6 +110,7 @@
     </div>
 
     <script type="module">
+        const BACKEND_URL = "http://localhost:3000"
         const { createApp } = Vue
 
         const webstore = createApp({
@@ -134,7 +135,7 @@
             },
             methods: {
                 async fetchData() {
-                    const url = "http://localhost:3000/";
+                    const url = BACKEND_URL + "/lessons";
                     let response = await fetch(url);
                     this.lessons = await response.json();
                 },
