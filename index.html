@@ -169,6 +169,20 @@
                 showCheckout() {
                     this.displayCart = this.displayCart ? false : true;
                 },
+                async updateLesson(lesson) {
+                    let updateBody = {
+                        availability: lesson.availability
+                    };
+                    const url = BACKEND_URL + "/lessons/" + lesson._id;
+                    const options = {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(updateBody)
+                    };
+                    let response = await fetch(url, options);
+                },
                 async submitOrder() {
                     const newOrder = {
                         name: this.order.name.trim(),
@@ -186,12 +200,22 @@
                     };
                     await fetch(url, options);
 
+                    // Update availability in the database for each lesson that was in the cart
+                    for (let i = 0; i < this.lessons.length; i++) {
+                        let lesson = this.lessons[i];
+                        if (this.cartCount(lesson.id) > 0 && lesson._id) {
+                            await this.updateLesson(lesson);
+                        }
+                    }
+
                     this.submittedName = this.order.name;
                     this.orderSubmitted = true;
                     alert("Order submitted!");
                     this.cart = [];
                     this.order.name = "";
                     this.order.phone = "";
+                    this.displayCart = false;
+                    await this.fetchData();
                 }
             },
             computed: {
