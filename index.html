@@ -38,6 +38,19 @@
                     </p>
                 </div>
 
+                <!-- [Challenge 2] Filter by Teacher: user can choose a teacher and view all lessons taught by that teacher -->
+                <div style="border: 1px solid #aaa; padding: 10px; margin: 10px 0;">
+                    <p>
+                        <strong>Filter by Teacher:</strong>
+                        <select v-model="selectedTeacher">
+                            <option value="all">All Teachers</option>
+                            <option v-for="teacher in teachers" v-bind:value="teacher.firstName + ' ' + teacher.lastName">
+                                {{ teacher.firstName }} {{ teacher.lastName }}
+                            </option>
+                        </select>
+                    </p>
+                </div>
+
                 <!-- Sort Controls: Sort by attribute and Ascending/Descending order -->
                 <div style="border: 1px solid #aaa; padding: 10px; margin: 10px 0;">
                     <p>
@@ -67,6 +80,9 @@
                     <p>Location: <span v-text="lesson.location"></span></p>
                     <p>Price: £{{ lesson.price }}</p>
                     <p>Spaces: {{ lesson.availability }}</p>
+                    <p v-if="lesson.teacherFirstName">
+                        Teacher: {{ lesson.teacherFirstName }} {{ lesson.teacherLastName }}
+                    </p>
 
                     <button v-on:click="addToCart(lesson)" v-bind:disabled="!canAddToCart(lesson)">
                         Add to cart
@@ -127,6 +143,8 @@
                     sitename: "After School Club",
                     displayCart: false,
                     lessons: [],
+                    teachers: [],
+                    selectedTeacher: "all",
                     cart: [],
                     searchQuery: "",
                     sortBy: "subject",
@@ -141,6 +159,7 @@
             },
             created() {
                 this.fetchData();
+                this.fetchTeachers();
             },
             watch: {
                 searchQuery: "searchLessons"
@@ -150,6 +169,11 @@
                     const url = BACKEND_URL + "/lessons";
                     let response = await fetch(url);
                     this.lessons = await response.json();
+                },
+                async fetchTeachers() {
+                    const url = BACKEND_URL + "/teachers";
+                    let response = await fetch(url);
+                    this.teachers = await response.json();
                 },
                 async searchLessons() {
                     const url = BACKEND_URL + "/search?q=" + encodeURIComponent(this.searchQuery);
@@ -240,6 +264,27 @@
                     return this.cart.length;
                 },
                 sortedLessons() {
+                    let filtered = this.lessons;
+                    if (this.selectedTeacher !== "all") {
+                        let chosenTeacher = null;
+                        for (let i = 0; i < this.teachers.length; i++) {
+                            let fullName = this.teachers[i].firstName + " " + this.teachers[i].lastName;
+                            if (fullName === this.selectedTeacher) {
+                                chosenTeacher = this.teachers[i];
+                            }
+                        }
+                        filtered = this.lessons.filter((lesson) => {
+                            let lessonTeacher = (lesson.teacherFirstName || "") + " " + (lesson.teacherLastName || "");
+                            if (lessonTeacher.trim() === this.selectedTeacher) {
+                                return true;
+                            }
+                            if (chosenTeacher && Array.isArray(chosenTeacher.lessonIDs)) {
+                                return chosenTeacher.lessonIDs.indexOf(lesson.id) > -1;
+                            }
+                            return false;
+                        });
+                    }
+
                     const attr = this.sortBy;
                     const direction = this.sortOrder === "ascending" ? 1 : -1;
                     function compare(a, b) {
@@ -247,7 +292,7 @@
                         if (a[attr] < b[attr]) return -1 * direction;
                         return 0;
                     }
-                    return this.lessons.slice().sort(compare);
+                    return filtered.slice().sort(compare);
                 },
                 validOrder() {
                     const nameRegex = /^[A-Za-z\s]+$/;
