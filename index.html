@@ -169,7 +169,23 @@
                 showCheckout() {
                     this.displayCart = this.displayCart ? false : true;
                 },
-                submitOrder() {
+                async submitOrder() {
+                    const newOrder = {
+                        name: this.order.name.trim(),
+                        phone: this.order.phone.trim(),
+                        lessonIDs: this.cart,
+                        spaces: this.cart.length
+                    };
+                    const url = BACKEND_URL + "/orders";
+                    const options = {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(newOrder)
+                    };
+                    await fetch(url, options);
+
                     this.submittedName = this.order.name;
                     this.orderSubmitted = true;
                     alert("Order submitted!");
